@@ -264,7 +264,14 @@ function writeSettings(){
 
 	    // NVIDIA DLSS / DLAA
 	    if (resScalingType == "4") {
-	        var dlssQuality = $xml.find("dlssQuality").attr("value");
+			var dlssQualityMap = {
+			    "0": "Performance",
+			    "1": "Balanced",
+			    "2": "Quality",
+			    "3": "DLAA"
+			};
+			
+			var dlssQuality = $xml.find("dlssQuality").attr("value");
 	        var dlssSharpen = $xml.find("dlssSharpen").attr("value");
 
 	        // Confirmed from the supplied Enhanced menu recording:
