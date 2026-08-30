@@ -557,8 +557,10 @@ function writeSettings(){
 	
 	            if (dlssFrameGenMode !== undefined) {
 	                var dlssFrameGenModeMap = {
-	                    "0": "2X"
-	                };
+					    "0": "2X",
+					    "1": "3X",
+					    "2": "4X"
+					};
 	
 	                writeLine(
 	                    "NVIDIA DLSS Frame Generation Mode: " +
