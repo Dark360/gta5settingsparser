@@ -280,7 +280,7 @@ function writeSettings(){
 	            );
 	        }
 
-	        writeLine("Anti-Aliasing: NVIDIA DLSS");
+	        
 
 	        if (dlssSharpen !== undefined) {
 	            writeLine(
@@ -300,7 +300,7 @@ function writeSettings(){
 	            writeLine("AMD FSR 3 Quality: " + fsr3Quality);
 	        }
 
-	        writeLine("Anti-Aliasing: AMD FSR 3");
+	        
 
 	        if (fsr3Sharpen !== undefined) {
 	            writeLine(
@@ -320,7 +320,7 @@ function writeSettings(){
 	            writeLine("AMD FSR 1 Quality: " + fsrQuality);
 	        }
 
-	        writeLine("Anti-Aliasing: AMD FSR 1");
+	        
 
 	        if (fsrSharpen !== undefined) {
 	            writeLine(
@@ -532,28 +532,21 @@ function writeSettings(){
 	    }
 	
 	    var frameGenType = $xml.find("FrameGenType").attr("value");
-	
-	    if (frameGenType !== undefined) {
-	        writeLine("Frame Generator: " + frameGenType);
-	    }
-	
-	    var dlssFrameGen = $xml.find("dlssFrameGenMode").attr("value");
-	
-	    if (dlssFrameGen !== undefined) {
-	        writeLine(
-	            "Frame Generation Mode (NVIDIA DLSS): " +
-	            (dlssFrameGen == "0" ? "Off" : "On")
-	        );
-	    }
-	
-	    var fsr3FrameGen = $xml.find("fsr3FrameGenMode").attr("value");
-	
-	    if (fsr3FrameGen !== undefined) {
-	        writeLine(
-	            "Frame Generation Mode (AMD FSR 3): " +
-	            (fsr3FrameGen == "0" ? "Off" : "On")
-	        );
-	    }
+    var dlssFrameGen = $xml.find("dlssFrameGenMode").attr("value");
+    var fsr3FrameGen = $xml.find("fsr3FrameGenMode").attr("value");
+
+    var frameGeneration = "Off";
+
+    // Prefer an explicitly active mode over FrameGenType.
+    // NVIDIA mode values can be expanded once confirmed from the game.
+    if (dlssFrameGen !== undefined && dlssFrameGen != "0") {
+        frameGeneration = "NVIDIA DLSS";
+    } else if (fsr3FrameGen !== undefined && fsr3FrameGen != "0") {
+        frameGeneration = "AMD FSR 3";
+    }
+
+    writeLine("Frame Generation: " + frameGeneration);
+
 	}
 	// Enhanced-only Ray Tracing settings
 	if (enhanced) {
