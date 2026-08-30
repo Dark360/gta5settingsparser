@@ -491,7 +491,169 @@ function writeSettings(){
 	        }
 	    }
 	}
+
+	// Enhanced-only LOD / population settings
+	if (enhanced) {
+	    var pedLodBias = $xml.find("PedLodBias").attr("value");
+	    var vehicleLodBias = $xml.find("VehicleLodBias").attr("value");
+	    var vehicleVariety = $xml.find("VehicleVarietyMultiplier").attr("value");
 	
+	    if (pedLodBias !== undefined) {
+	        writeLine(
+	            "Pedestrian LOD Bias: " +
+	            (parseFloat(pedLodBias) * 100).toFixed(0) +
+	            "%"
+	        );
+	    }
+	
+	    if (vehicleLodBias !== undefined) {
+	        writeLine(
+	            "Vehicle LOD Bias: " +
+	            (parseFloat(vehicleLodBias) * 100).toFixed(0) +
+	            "%"
+	        );
+	    }
+	
+	    if (vehicleVariety !== undefined) {
+	        writeLine(
+	            "Vehicle variety: " +
+	            (parseFloat(vehicleVariety) * 100).toFixed(0) +
+	            "%"
+	        );
+	    }
+	}
+	
+	if (enhanced) {
+	    var reflexMode = $xml.find("ReflexMode").attr("value");
+	
+	    if (reflexMode !== undefined) {
+	        switch (reflexMode) {
+	            case "0":
+	                writeLine("NVIDIA Reflex: Off");
+	                break;
+	            case "1":
+	                writeLine("NVIDIA Reflex: On");
+	                break;
+	            case "2":
+	                writeLine("NVIDIA Reflex: On + Boost");
+	                break;
+	            default:
+	                writeLine("NVIDIA Reflex: Unknown (" + reflexMode + ")");
+	        }
+	    }
+	
+	    var frameGenType = $xml.find("FrameGenType").attr("value");
+	
+	    if (frameGenType !== undefined) {
+	        writeLine("Frame Generation Type: " + frameGenType);
+	    }
+	
+	    var dlssFrameGen = $xml.find("dlssFrameGenMode").attr("value");
+	    var fsr3FrameGen = $xml.find("fsr3FrameGenMode").attr("value");
+	
+	    if (dlssFrameGen !== undefined) {
+	        writeLine(
+	            "DLSS Frame Generation: " +
+	            (dlssFrameGen == "0" ? "Off" : "On")
+	        );
+	    }
+	
+	    if (fsr3FrameGen !== undefined) {
+	        writeLine(
+	            "FSR 3 Frame Generation: " +
+	            (fsr3FrameGen == "0" ? "Off" : "On")
+	        );
+	    }
+	}
+	
+	if (enhanced) {
+	    var rtEnabled = $xml.find("Raytracing_Enabled").attr("value");
+	
+	    if (rtEnabled !== undefined) {
+	        writeLine(
+	            "Ray Tracing: " +
+	            (rtEnabled == "true" ? "On" : "Off")
+	        );
+	    }
+	
+	    if (rtEnabled == "true") {
+	
+	        function writeRTSetting(enabledTag, qualityTag, label) {
+	            var enabled = $xml.find(enabledTag).attr("value");
+	            var quality = $xml.find(qualityTag).attr("value");
+	
+	            if (enabled === undefined) {
+	                return;
+	            }
+	
+	            if (enabled != "true") {
+	                writeLine(label + ": Off");
+	                return;
+	            }
+	
+	            if (quality !== undefined) {
+	                writeLine(label + ": " + quality);
+	            } else {
+	                writeLine(label + ": On");
+	            }
+	        }
+	
+	        writeRTSetting(
+	            "RTShadows_Enabled",
+	            "RTShadows_Quality",
+	            "RT Shadows"
+	        );
+	
+	        writeRTSetting(
+	            "RTAmbientOcclusion_Enabled",
+	            "RTAmbientOcclusion_Quality",
+	            "RT Ambient Occlusion"
+	        );
+	
+	        writeRTSetting(
+	            "RTReflection_Enabled",
+	            "RTReflection_Quality",
+	            "RT Reflections"
+	        );
+	
+	        writeRTSetting(
+	            "RTIndirectDiffuse_Enabled",
+	            "RTIndirectDiffuse_Quality",
+	            "RT Global Illumination"
+	        );
+	
+	        var characterShadows =
+	            $xml.find("RTCharacterShadow_Enabled").attr("value");
+	
+	        if (characterShadows !== undefined) {
+	            writeLine(
+	                "RT Character Shadows: " +
+	                (characterShadows == "true" ? "On" : "Off")
+	            );
+	        }
+	
+	        var secondBounce =
+	            $xml.find("RTIndirectDiffuse_SecondBounce_Enabled").attr("value");
+	
+	        if (secondBounce !== undefined) {
+	            writeLine(
+	                "RT GI Second Bounce: " +
+	                (secondBounce == "true" ? "On" : "Off")
+	            );
+	        }
+	
+	        var fullResReflections =
+	            $xml.find("RTReflection_FullRes_Enabled").attr("value");
+	
+	        if (fullResReflections !== undefined) {
+	            writeLine(
+	                "Full Resolution RT Reflections: " +
+	                (fullResReflections == "true" ? "On" : "Off")
+	            );
+	        }
+	    }
+	}
+
 	function parse(){
 		$("#parsed").val('');
 		parseXML();
