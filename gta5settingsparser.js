@@ -130,14 +130,490 @@ function writeLine(line){
 	$("#parsed").val($("#parsed").val() + line + "  \n");
 }
 
+
+function writeEnhancedSettings() {
+    writeLine("GTA V Enhanced");
+
+    // VIDEO
+    var width = $xml.find("ScreenWidth").attr("value");
+    var height = $xml.find("ScreenHeight").attr("value");
+    var refreshrate = $xml.find("RefreshRate").attr("value");
+    var windowed = $xml.find("Windowed").attr("value");
+    var vsyncValue = $xml.find("VSync").attr("value");
+
+    var windowMode;
+    switch (windowed) {
+        case "0":
+            windowMode = "Fullscreen";
+            break;
+        case "1":
+            windowMode = "Windowed";
+            break;
+        case "2":
+            windowMode = "Borderless";
+            break;
+        case "3":
+            windowMode = "Borderless Fullscreen";
+            break;
+        default:
+            windowMode = "Unknown (" + windowed + ")";
+    }
+
+    var vsync = vsyncValue == "0" ? "V-sync off" : "V-sync on";
+
+    writeLine(
+        width + " x " +
+        height + ", " +
+        refreshrate + " hz, " +
+        windowMode + ", " +
+        vsync
+    );
+
+    var reflexMode = $xml.find("ReflexMode").attr("value");
+    if (reflexMode !== undefined) {
+        switch (reflexMode) {
+            case "0":
+                writeLine("NVIDIA Reflex: Off");
+                break;
+            case "1":
+                writeLine("NVIDIA Reflex: On");
+                break;
+            case "2":
+                writeLine("NVIDIA Reflex: On + Boost");
+                break;
+            default:
+                writeLine("NVIDIA Reflex: Unknown (" + reflexMode + ")");
+        }
+    }
+
+
+    // RAY TRACING
+    var rtEnabled = $xml.find("Raytracing_Enabled").attr("value");
+
+    if (rtEnabled !== undefined) {
+        writeLine(
+            "Enable Ray Tracing: " +
+            (rtEnabled == "true" ? "On" : "Off")
+        );
+    }
+
+    if (rtEnabled == "true") {
+        function writeRTSetting(enabledTag, qualityTag, label) {
+            var enabled = $xml.find(enabledTag).attr("value");
+            var quality = $xml.find(qualityTag).attr("value");
+
+            if (enabled === undefined) {
+                return;
+            }
+
+            if (enabled != "true") {
+                writeLine(label + ": Off");
+                return;
+            }
+
+            if (quality !== undefined) {
+                if (quality in RT_QUALITY_SETTINGS) {
+                    writeLine(label + ": " + RT_QUALITY_SETTINGS[quality]);
+                } else {
+                    writeLine(label + ": Unknown (" + quality + ")");
+                }
+            } else {
+                writeLine(label + ": On");
+            }
+        }
+
+        writeRTSetting(
+            "RTShadows_Enabled",
+            "RTShadows_Quality",
+            "Ray Traced Shadows"
+        );
+
+        writeRTSetting(
+            "RTReflection_Enabled",
+            "RTReflection_Quality",
+            "Ray Traced Reflections"
+        );
+
+        var fullResReflections =
+            $xml.find("RTReflection_FullRes_Enabled").attr("value");
+
+        if (fullResReflections !== undefined) {
+            writeLine(
+                "High Resolution Ray Traced Reflections: " +
+                (fullResReflections == "true" ? "On" : "Off")
+            );
+        }
+
+        writeRTSetting(
+            "RTIndirectDiffuse_Enabled",
+            "RTIndirectDiffuse_Quality",
+            "Ray Traced Global Illumination"
+        );
+
+        var secondBounce =
+            $xml.find("RTIndirectDiffuse_SecondBounce_Enabled").attr("value");
+
+        if (secondBounce !== undefined) {
+            writeLine(
+                "Second Ray Traced Global Illumination Bounce: " +
+                (secondBounce == "true" ? "On" : "Off")
+            );
+        }
+
+        writeRTSetting(
+            "RTAmbientOcclusion_Enabled",
+            "RTAmbientOcclusion_Quality",
+            "Ray Traced Ambient Occlusion"
+        );
+
+        var bvhQuality = $xml.find("BVHQuality").attr("value");
+        if (bvhQuality !== undefined) {
+            var bvhQualityName = {
+                "1": "Very High"
+            };
+
+            writeLine(
+                "Ray Tracing Scene BVH Quality: " +
+                (bvhQualityName[bvhQuality] || "Unknown (" + bvhQuality + ")")
+            );
+        }
+    }
+
+
+    // FRAME SCALING
+    var resScalingType = $xml.find("ResScalingType").attr("value");
+
+    var resScalingTypeMap = {
+        "0": "Off",
+        "1": "Sampling",
+        "2": "AMD FSR 1",
+        "3": "AMD FSR 3",
+        "4": "NVIDIA DLSS"
+    };
+
+    writeLine(
+        "Frame Scaling: " +
+        (resScalingTypeMap[resScalingType] || "Unknown (" + resScalingType + ")")
+    );
+
+    if (resScalingType == "1") {
+        var samplingMode = $xml.find("SamplingMode").attr("value");
+
+        if (samplingMode !== undefined) {
+            writeLine("Resolution Scaler: " + samplingMode);
+        }
+
+        writeLine("Anti-Aliasing: TAA");
+    }
+
+    if (resScalingType == "2") {
+        var fsrQualityMap = {
+            "1": "Ultra Quality",
+            "2": "Quality",
+            "3": "Balanced",
+            "4": "Performance"
+        };
+
+        var fsrQuality = $xml.find("fsrQuality").attr("value");
+
+        if (fsrQuality !== undefined) {
+            writeLine(
+                "AMD FSR 1 Quality: " +
+                (fsrQualityMap[fsrQuality] || "Unknown (" + fsrQuality + ")")
+            );
+        }
+    }
+
+    if (resScalingType == "3") {
+        var fsr3QualityMap = {
+            "0": "Performance",
+            "1": "Balanced",
+            "2": "Quality",
+            "3": "Native AA"
+        };
+
+        var fsr3Quality = $xml.find("fsr3Quality").attr("value");
+
+        if (fsr3Quality !== undefined) {
+            writeLine(
+                "AMD FSR 3 Quality: " +
+                (fsr3QualityMap[fsr3Quality] || "Unknown (" + fsr3Quality + ")")
+            );
+        }
+    }
+
+    if (resScalingType == "4") {
+        var dlssQualityMap = {
+            "0": "Performance",
+            "1": "Balanced",
+            "2": "Quality",
+            "3": "DLAA"
+        };
+
+        var dlssQuality = $xml.find("dlssQuality").attr("value");
+
+        if (dlssQuality !== undefined) {
+            writeLine(
+                "NVIDIA DLSS Quality: " +
+                (dlssQualityMap[dlssQuality] || "Unknown (" + dlssQuality + ")")
+            );
+        }
+    }
+
+    // Frame Generator follows Frame Scaling in the in-game menu.
+    var frameGenType = $xml.find("FrameGenType").attr("value");
+
+    if (frameGenType !== undefined) {
+        switch (frameGenType) {
+            case "0":
+                writeLine("Frame Generator: Off");
+                break;
+
+            case "1":
+                writeLine("Frame Generator: NVIDIA DLSS");
+
+                var dlssFrameGenMode =
+                    $xml.find("dlssFrameGenMode").attr("value");
+
+                if (dlssFrameGenMode !== undefined) {
+                    // 0 = 2X confirmed on RTX 4090.
+                    // 1 = 3X and 2 = 4X are provisional RTX 50-series mappings.
+                    var dlssFrameGenModeMap = {
+                        "0": "2X",
+                        "1": "3X",
+                        "2": "4X"
+                    };
+
+                    writeLine(
+                        "NVIDIA DLSS Frame Generation Mode: " +
+                        (dlssFrameGenModeMap[dlssFrameGenMode] ||
+                            "Unknown (" + dlssFrameGenMode + ")")
+                    );
+                }
+                break;
+
+            case "2":
+                writeLine("Frame Generator: AMD FSR 3");
+
+                var fsr3FrameGenMode =
+                    $xml.find("fsr3FrameGenMode").attr("value");
+
+                if (fsr3FrameGenMode !== undefined) {
+                    var fsr3FrameGenModeMap = {
+                        "0": "Off",
+                        "1": "On"
+                    };
+
+                    writeLine(
+                        "AMD FSR 3 Frame Generation Mode: " +
+                        (fsr3FrameGenModeMap[fsr3FrameGenMode] ||
+                            "Unknown (" + fsr3FrameGenMode + ")")
+                    );
+                }
+                break;
+
+            default:
+                writeLine("Frame Generator: Unknown (" + frameGenType + ")");
+        }
+    }
+
+    var sharpen;
+    if (resScalingType == "2") {
+        sharpen = $xml.find("fsrSharpen").attr("value");
+    } else if (resScalingType == "3") {
+        sharpen = $xml.find("fsr3Sharpen").attr("value");
+    } else if (resScalingType == "4") {
+        sharpen = $xml.find("dlssSharpen").attr("value");
+    } else {
+        sharpen = $xml.find("TAA_SharpenIntensity").attr("value");
+    }
+
+    if (sharpen !== undefined) {
+        writeLine(
+            "Sharpness: " +
+            (parseFloat(sharpen) * 100).toFixed(0) +
+            "%"
+        );
+    }
+
+
+    // QUALITY
+    var shader_quality = $xml.find("ShaderQuality").attr("value");
+    if (shader_quality in SHADER_QUALITY_SETTINGS) {
+        writeLine("Shader quality: " + SHADER_QUALITY_SETTINGS[shader_quality]);
+    }
+
+    var texture_quality = $xml.find("TextureQuality").attr("value");
+    if (texture_quality in TEXTURE_QUALITY_SETTINGS) {
+        writeLine("Texture quality: " + TEXTURE_QUALITY_SETTINGS[texture_quality]);
+    }
+
+    var anisotropic_filtering = $xml.find("AnisotropicFiltering").attr("value");
+    if (anisotropic_filtering == 0) {
+        writeLine("Anisotropic Filtering: Off");
+    } else {
+        writeLine("Anisotropic Filtering: " + anisotropic_filtering + "x");
+    }
+
+    var particle_quality = $xml.find("ParticleQuality").attr("value");
+    if (particle_quality in PARTICLE_QUALITY_SETTINGS) {
+        writeLine("Particle quality: " + PARTICLE_QUALITY_SETTINGS[particle_quality]);
+    }
+
+    var tessellation = $xml.find("Tessellation").attr("value");
+    if (tessellation in TESSELLATION_SETTINGS) {
+        writeLine("Tessellation: " + TESSELLATION_SETTINGS[tessellation]);
+    }
+
+    var water_quality = $xml.find("WaterQuality").attr("value");
+    if (water_quality in WATER_QUALITY_SETTINGS) {
+        writeLine("Water quality: " + WATER_QUALITY_SETTINGS[water_quality]);
+    }
+
+    var grass_quality = $xml.find("GrassQuality").attr("value");
+    if (grass_quality in GRASS_QUALITY_SETTINGS) {
+        writeLine("Grass quality: " + GRASS_QUALITY_SETTINGS[grass_quality]);
+    }
+
+
+    // LIGHTING
+    var reflection_quality = $xml.find("ReflectionQuality").first().attr("value");
+    if (reflection_quality in REFLECTION_QUALITY_SETTINGS) {
+        writeLine("Reflection quality: " + REFLECTION_QUALITY_SETTINGS[reflection_quality]);
+    }
+
+    var shadow_quality = $xml.find("ShadowQuality").attr("value");
+    if (shadow_quality in SHADOW_QUALITY_SETTINGS) {
+        writeLine("Shadow quality: " + SHADOW_QUALITY_SETTINGS[shadow_quality]);
+    }
+
+    var shadow_softshadows = $xml.find("Shadow_SoftShadows").attr("value");
+    if (shadow_softshadows in SHADOW_SHOFTSHADOWS_SETTINGS) {
+        writeLine("Soft shadows: " + SHADOW_SHOFTSHADOWS_SETTINGS[shadow_softshadows]);
+    }
+
+    var longshadows = $xml.find("Shadow_LongShadows").attr("value");
+    writeLine(
+        "Long Shadows: " +
+        ((longshadows == "true" || longshadows == 1) ? "On" : "Off")
+    );
+
+    var ultrashadows = $xml.find("UltraShadows_Enabled").attr("value");
+    writeLine(
+        "High Resolution Shadows: " +
+        ((ultrashadows == "true" || ultrashadows == 1) ? "On" : "Off")
+    );
+
+    var extended_shadow_distance = $xml.find("Shadow_Distance").attr("value");
+    extended_shadow_distance =
+        (parseFloat(extended_shadow_distance - 1) * 100).toFixed(0);
+
+    writeLine(
+        "Extended Shadow Distance: " +
+        extended_shadow_distance +
+        "%"
+    );
+
+
+    // POST FX
+    var postfx = $xml.find("PostFX").attr("value");
+    if (postfx in POSTFX_SETTINGS) {
+        writeLine("Post FX: " + POSTFX_SETTINGS[postfx]);
+    }
+
+    var dof = $xml.find("DoF").attr("value");
+    writeLine(
+        "Depth of Field: " +
+        ((dof == "false" || dof == "0") ? "Off" : "On")
+    );
+
+    var motion_blur_strength = $xml.find("MotionBlurStrength").attr("value");
+    motion_blur_strength =
+        (parseFloat(motion_blur_strength) * 100).toFixed(0);
+
+    writeLine("Motion Blur: " + motion_blur_strength + "%");
+
+    var ao = $xml.find("SSAOType").attr("value");
+    if (ao in AO_SETTINGS) {
+        writeLine("Ambient Occlusion: " + AO_SETTINGS[ao]);
+    }
+
+
+    // SCENE
+    var population_density = $xml.find("CityDensity").attr("value");
+    population_density =
+        (parseFloat(population_density) * 100).toFixed(0);
+
+    var population_variety =
+        $xml.find("PedVarietyMultiplier").attr("value");
+    population_variety =
+        (parseFloat(population_variety) * 100).toFixed(0);
+
+    var distance_scaling = $xml.find("LodScale").attr("value");
+    distance_scaling =
+        (parseFloat(distance_scaling) * 100).toFixed(0);
+
+    writeLine("Population density: " + population_density + "%");
+    writeLine("Population variety: " + population_variety + "%");
+    writeLine("Distance scaling: " + distance_scaling + "%");
+
+    var flying_streaming = $xml.find("HdStreamingInFlight").attr("value");
+    writeLine(
+        "HD Streaming while Flying: " +
+        ((flying_streaming == "true" || flying_streaming == 1) ? "On" : "Off")
+    );
+
+    var extended_distance_scaling = $xml.find("MaxLodScale").attr("value");
+    extended_distance_scaling =
+        (parseFloat(extended_distance_scaling) * 100).toFixed(0);
+
+    writeLine(
+        "Extended Distance Scaling: " +
+        extended_distance_scaling +
+        "%"
+    );
+
+    // Additional Enhanced values retained by settings.xml.
+    var pedLodBias = $xml.find("PedLodBias").attr("value");
+    if (pedLodBias !== undefined) {
+        writeLine(
+            "Pedestrian LOD Bias: " +
+            (parseFloat(pedLodBias) * 100).toFixed(0) +
+            "%"
+        );
+    }
+
+    var vehicleLodBias = $xml.find("VehicleLodBias").attr("value");
+    if (vehicleLodBias !== undefined) {
+        writeLine(
+            "Vehicle LOD Bias: " +
+            (parseFloat(vehicleLodBias) * 100).toFixed(0) +
+            "%"
+        );
+    }
+
+    var vehicleVariety =
+        $xml.find("VehicleVarietyMultiplier").attr("value");
+
+    if (vehicleVariety !== undefined) {
+        writeLine(
+            "Vehicle variety: " +
+            (parseFloat(vehicleVariety) * 100).toFixed(0) +
+            "%"
+        );
+    }
+}
+
 function writeSettings(){
-	// Video card and DirectX version
 	var enhanced = $xml.find("AAType").length > 0;
-		if (enhanced) {
-	    writeLine("GTA V Enhanced");
-	} else {
-	    writeLine("GTA V Legacy");
+
+	if (enhanced) {
+		writeEnhancedSettings();
+		return;
 	}
+
+	// Video card and DirectX version
+	writeLine("GTA V Legacy");
 	var videocard = $xml.find("VideoCardDescription").text();
 	var dx_version = $xml.find("DX_Version").attr("value");
 	if(dx_version in DX_VERSION_SETTINGS){
@@ -541,61 +1017,61 @@ function writeSettings(){
 	        }
 	    }
 	
-	var frameGenType = $xml.find("FrameGenType").attr("value");
-	
-	if (frameGenType !== undefined) {
-	    switch (frameGenType) {
-	        case "0":
-	            writeLine("Frame Generator: Off");
-	            break;
-	
-	        case "1":
-	            writeLine("Frame Generator: NVIDIA DLSS");
-	
-	            var dlssFrameGenMode =
-	                $xml.find("dlssFrameGenMode").attr("value");
-	
-	            if (dlssFrameGenMode !== undefined) {
-	                var dlssFrameGenModeMap = {
-					    "0": "2X",
-					    "1": "3X",
-					    "2": "4X"
-					};
-	
-	                writeLine(
-	                    "NVIDIA DLSS Frame Generation Mode: " +
-	                    (dlssFrameGenModeMap[dlssFrameGenMode] ||
-	                        "Unknown (" + dlssFrameGenMode + ")")
-	                );
-	            }
-	            break;
-	
-	        case "2":
-	            writeLine("Frame Generator: AMD FSR 3");
-	
-	            var fsr3FrameGenMode =
-	                $xml.find("fsr3FrameGenMode").attr("value");
-	
-	            if (fsr3FrameGenMode !== undefined) {
-	                var fsr3FrameGenModeMap = {
-	                    "0": "Off",
-	                    "1": "On"
-	                };
-	
-	                writeLine(
-	                    "AMD FSR 3 Frame Generation Mode: " +
-	                    (fsr3FrameGenModeMap[fsr3FrameGenMode] ||
-	                        "Unknown (" + fsr3FrameGenMode + ")")
-	                );
-	            }
-	            break;
-	
-	        default:
-	            writeLine(
-	                "Frame Generator: Unknown (" + frameGenType + ")"
-	            );
-	    }
-	}
+	    var frameGenType = $xml.find("FrameGenType").attr("value");
+
+    if (frameGenType !== undefined) {
+        switch (frameGenType) {
+            case "0":
+                writeLine("Frame Generator: Off");
+                break;
+
+            case "1":
+                writeLine("Frame Generator: NVIDIA DLSS");
+
+                var dlssFrameGenMode =
+                    $xml.find("dlssFrameGenMode").attr("value");
+
+                if (dlssFrameGenMode !== undefined) {
+                    // 0 = 2X confirmed on RTX 4090.
+                    // 1 = 3X and 2 = 4X are provisional RTX 50-series mappings.
+                    var dlssFrameGenModeMap = {
+                        "0": "2X",
+                        "1": "3X",
+                        "2": "4X"
+                    };
+
+                    writeLine(
+                        "NVIDIA DLSS Frame Generation Mode: " +
+                        (dlssFrameGenModeMap[dlssFrameGenMode] ||
+                            "Unknown (" + dlssFrameGenMode + ")")
+                    );
+                }
+                break;
+
+            case "2":
+                writeLine("Frame Generator: AMD FSR 3");
+
+                var fsr3FrameGenMode =
+                    $xml.find("fsr3FrameGenMode").attr("value");
+
+                if (fsr3FrameGenMode !== undefined) {
+                    var fsr3FrameGenModeMap = {
+                        "0": "Off",
+                        "1": "On"
+                    };
+
+                    writeLine(
+                        "AMD FSR 3 Frame Generation Mode: " +
+                        (fsr3FrameGenModeMap[fsr3FrameGenMode] ||
+                            "Unknown (" + fsr3FrameGenMode + ")")
+                    );
+                }
+                break;
+
+            default:
+                writeLine("Frame Generator: Unknown (" + frameGenType + ")");
+        }
+    }
 
 	}
 	// Enhanced-only Ray Tracing settings
