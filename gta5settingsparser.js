@@ -568,6 +568,26 @@ function writeSettings(){
 	            }
 	            break;
 	
+	        case "2":
+	            writeLine("Frame Generator: AMD FSR 3");
+	
+	            var fsr3FrameGenMode =
+	                $xml.find("fsr3FrameGenMode").attr("value");
+	
+	            if (fsr3FrameGenMode !== undefined) {
+	                var fsr3FrameGenModeMap = {
+	                    "0": "Off",
+	                    "1": "On"
+	                };
+	
+	                writeLine(
+	                    "AMD FSR 3 Frame Generation Mode: " +
+	                    (fsr3FrameGenModeMap[fsr3FrameGenMode] ||
+	                        "Unknown (" + fsr3FrameGenMode + ")")
+	                );
+	            }
+	            break;
+	
 	        default:
 	            writeLine(
 	                "Frame Generator: Unknown (" + frameGenType + ")"
