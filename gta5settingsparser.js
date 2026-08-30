@@ -4,6 +4,24 @@
 var $xml;
 
 // define value -> setting translation
+var AA_TYPE_SETTINGS = {};
+AA_TYPE_SETTINGS["0"] = "Off";
+AA_TYPE_SETTINGS["1"] = "FXAA";
+AA_TYPE_SETTINGS["2"] = "TAA";
+
+var RES_SCALING_SETTINGS = {};
+RES_SCALING_SETTINGS["0"] = "Off";
+RES_SCALING_SETTINGS["1"] = "SSAA";
+RES_SCALING_SETTINGS["2"] = "FSR 1";
+RES_SCALING_SETTINGS["3"] = "FSR 3";
+RES_SCALING_SETTINGS["4"] = "DLSS / DLAA";
+
+var RT_QUALITY_SETTINGS = {};
+RT_QUALITY_SETTINGS["0"] = "Off";
+RT_QUALITY_SETTINGS["1"] = "High";
+RT_QUALITY_SETTINGS["2"] = "Very High";
+RT_QUALITY_SETTINGS["3"] = "Ultra";
+
 var DX_VERSION_SETTINGS = {};
 DX_VERSION_SETTINGS["0"] = "DirectX 10";
 DX_VERSION_SETTINGS["1"] = "DirectX 10.1";
@@ -113,6 +131,12 @@ function writeLine(line){
 
 function writeSettings(){
 	// Video card and DirectX version
+	var enhanced = $xml.find("AAType").length > 0;
+		if (enhanced) {
+	    writeLine("GTA V Enhanced");
+	} else {
+	    writeLine("GTA V Legacy");
+	}
 	var videocard = $xml.find("VideoCardDescription").text();
 	var dx_version = $xml.find("DX_Version").attr("value");
 	if(dx_version in DX_VERSION_SETTINGS){
@@ -124,24 +148,136 @@ function writeSettings(){
 	var height = $xml.find("ScreenHeight").attr("value");
 	var refreshrate = $xml.find("RefreshRate").attr("value");
 	var windowed = $xml.find("Windowed").attr("value");
-	if(windowed == 0){windowed = "Fullscreen";}else{windowed = "Windowed";}
-	var vsync = $xml.find("Vsync").attr("value");
-	if(vsync == 0){vsync = "No V-sync";}else{vsync = "V-sync on";}
-	writeLine(width + " x " + height + ", " + refreshrate + " hz, " + windowed + ", " + vsync);
 	
-	// Anti-aliasing: FXAA, MSAA, TXAA
-	var FXAA = $xml.find("FXAA_Enabled").attr("value");
-	if(FXAA == "false" || FXAA == "0" ){FXAA = "FXAA off";}else{FXAA = "FXAA on";}
-	var MSAA = $xml.find("MSAA").attr("value");
-	if(MSAA != 0){ // you can only have TXAA when you have MSAA
-		MSAA = "MSAA " + MSAA + "x";
-		var TXAA = $xml.find("TXAA_Enabled").attr("value");
-		if(TXAA == "false" || TXAA == "0"){TXAA = "TXAA off";}else{TXAA = "TXAA on";}
-		writeLine(FXAA + ", " + MSAA + ", " + TXAA);
+	var windowMode;
+	
+	if (enhanced) {
+	    switch(windowed) {
+	        case "0":
+	            windowMode = "Fullscreen";
+	            break;
+	        case "1":
+	            windowMode = "Windowed";
+	            break;
+	        case "2":
+	            windowMode = "Borderless";
+	            break;
+	        case "3":
+	            windowMode = "Borderless Fullscreen";
+	            break;
+	        default:
+	            windowMode = "Unknown (" + windowed + ")";
+	    }
 	} else {
-		writeLine(FXAA + ", MSAA off");
+	    windowMode = windowed == 0 ? "Fullscreen" : "Windowed";
 	}
 	
+	var vsync;
+	
+	if (enhanced) {
+	    var vsyncValue = $xml.find("VSync").attr("value");
+	    vsync = vsyncValue == "0" ? "V-sync off" : "V-sync on";
+	} else {
+	    var vsyncValue = $xml.find("Vsync").attr("value");
+	    vsync = vsyncValue == "0" ? "No V-sync" : "V-sync on";
+	}
+	
+	writeLine(
+	    width + " x " +
+	    height + ", " +
+	    refreshrate + " hz, " +
+	    windowMode + ", " +
+	    vsync
+	);
+	
+	// Anti-aliasing: FXAA, MSAA, TXAA
+	if (enhanced) {
+	
+	    var aaType = $xml.find("AAType").attr("value");
+	
+	    if (aaType in AA_TYPE_SETTINGS) {
+	        writeLine("Anti-aliasing: " + AA_TYPE_SETTINGS[aaType]);
+	    } else {
+	        writeLine("Anti-aliasing: Unknown (" + aaType + ")");
+	    }
+	
+	    if (aaType == "2") {
+	        var taaQuality = $xml.find("TAA_Quality").attr("value");
+	        var taaSharpen = $xml.find("TAA_SharpenIntensity").attr("value");
+	
+	        writeLine("TAA Quality: " + taaQuality);
+	        writeLine(
+	            "TAA Sharpening: " +
+	            (parseFloat(taaSharpen) * 100).toFixed(0) +
+	            "%"
+	        );
+	    }
+	
+	} else {
+	
+	    var FXAA = $xml.find("FXAA_Enabled").attr("value");
+	
+	    if (FXAA == "false" || FXAA == "0") {
+	        FXAA = "FXAA off";
+	    } else {
+	        FXAA = "FXAA on";
+	    }
+	
+	    var MSAA = $xml.find("MSAA").attr("value");
+	
+	    if (MSAA != 0) {
+	        MSAA = "MSAA " + MSAA + "x";
+	
+	        var TXAA = $xml.find("TXAA_Enabled").attr("value");
+	
+	        if (TXAA == "false" || TXAA == "0") {
+	            TXAA = "TXAA off";
+	        } else {
+	            TXAA = "TXAA on";
+	        }
+	
+	        writeLine(FXAA + ", " + MSAA + ", " + TXAA);
+	
+	    } else {
+	        writeLine(FXAA + ", MSAA off");
+	    }
+	}
+
+	if (enhanced) {
+	
+	    var resScalingType = $xml.find("ResScalingType").attr("value");
+	
+	    if (resScalingType in RES_SCALING_SETTINGS) {
+	        writeLine("Upscaling: " + RES_SCALING_SETTINGS[resScalingType]);
+	    }
+	
+	    if (resScalingType == "4") {
+	
+	        var dlssQuality = $xml.find("dlssQuality").attr("value");
+	        var dlssSharpen = $xml.find("dlssSharpen").attr("value");
+	
+	        writeLine("DLSS Quality: " + dlssQuality);
+	        writeLine(
+	            "DLSS Sharpening: " +
+	            (parseFloat(dlssSharpen) * 100).toFixed(0) +
+	            "%"
+	        );
+	    }
+	
+	    if (resScalingType == "3") {
+	
+	        var fsr3Quality = $xml.find("fsr3Quality").attr("value");
+	        var fsr3Sharpen = $xml.find("fsr3Sharpen").attr("value");
+	
+	        writeLine("FSR 3 Quality: " + fsr3Quality);
+	        writeLine(
+	            "FSR 3 Sharpening: " +
+	            (parseFloat(fsr3Sharpen) * 100).toFixed(0) +
+	            "%"
+	        );
+	    }
+	}
+
 	// Population and distance scaling/variety
 	var population_density = $xml.find("CityDensity").attr("value");
 	population_density = (parseFloat(population_density) * 100).toFixed(0);
@@ -233,10 +369,19 @@ function writeSettings(){
 	}
 	
 	// Ambient Occlusion
-	var ao = $xml.find("SSAO").attr("value");
-	if(ao in AO_SETTINGS){
-		writeLine("Ambient Occlusion: " + AO_SETTINGS[ao]);
-	} else {writeLine("UNKNOWN AMBIENT OCCLUSION SETTING");}
+	var ao;
+	
+	if (enhanced) {
+	    ao = $xml.find("SSAOType").attr("value");
+	} else {
+	    ao = $xml.find("SSAO").attr("value");
+	}
+	
+	if (ao in AO_SETTINGS) {
+	    writeLine("Ambient Occlusion: " + AO_SETTINGS[ao]);
+	} else {
+	    writeLine("UNKNOWN AMBIENT OCCLUSION SETTING");
+	}
 	
 	// Tessellation
 	var tessellation = $xml.find("Tessellation").attr("value");
@@ -278,15 +423,79 @@ function writeSettings(){
 	extended_shadow_distance = (parseFloat(extended_shadow_distance - 1) * 100).toFixed(0);
 	writeLine("Extended Shadow Distance: " + extended_shadow_distance + "%");
 	
-}
-
-function parse(){
-	$("#parsed").val('');
-	parseXML();
-	if(!valid_xml){
-		writeLine("No XML or invalid XML pasted. Make sure you paste the full contents of your settings.xml file in the area on the left!");
-		return;
 	}
-	writeSettings();
-	writeLine("Generated with Forceflow's GTA 5 settings parser");
-}
+	
+	if (enhanced) {
+	
+	    var rtEnabled = $xml.find("Raytracing_Enabled").attr("value");
+	
+	    writeLine(
+	        "Ray Tracing: " +
+	        (rtEnabled == "true" ? "On" : "Off")
+	    );
+	
+	    if (rtEnabled == "true") {
+	
+	        var rtShadows = $xml.find("RTShadows_Enabled").attr("value");
+	        var rtShadowsQuality = $xml.find("RTShadows_Quality").attr("value");
+	
+	        if (rtShadows == "true") {
+	            writeLine(
+	                "RT Shadows: " +
+	                (RT_QUALITY_SETTINGS[rtShadowsQuality] || rtShadowsQuality)
+	            );
+	        } else {
+	            writeLine("RT Shadows: Off");
+	        }
+	
+	
+	        var rtAO = $xml.find("RTAmbientOcclusion_Enabled").attr("value");
+	        var rtAOQuality = $xml.find("RTAmbientOcclusion_Quality").attr("value");
+	
+	        if (rtAO == "true") {
+	            writeLine(
+	                "RT Ambient Occlusion: " +
+	                (RT_QUALITY_SETTINGS[rtAOQuality] || rtAOQuality)
+	            );
+	        } else {
+	            writeLine("RT Ambient Occlusion: Off");
+	        }
+	
+	
+	        var rtReflections = $xml.find("RTReflection_Enabled").attr("value");
+	        var rtReflectionsQuality = $xml.find("RTReflection_Quality").attr("value");
+	
+	        if (rtReflections == "true") {
+	            writeLine(
+	                "RT Reflections: " +
+	                (RT_QUALITY_SETTINGS[rtReflectionsQuality] || rtReflectionsQuality)
+	            );
+	        } else {
+	            writeLine("RT Reflections: Off");
+	        }
+	
+	
+	        var rtGI = $xml.find("RTIndirectDiffuse_Enabled").attr("value");
+	        var rtGIQuality = $xml.find("RTIndirectDiffuse_Quality").attr("value");
+	
+	        if (rtGI == "true") {
+	            writeLine(
+	                "RT Global Illumination: " +
+	                (RT_QUALITY_SETTINGS[rtGIQuality] || rtGIQuality)
+	            );
+	        } else {
+	            writeLine("RT Global Illumination: Off");
+	        }
+	    }
+	}
+	
+	function parse(){
+		$("#parsed").val('');
+		parseXML();
+		if(!valid_xml){
+			writeLine("No XML or invalid XML pasted. Make sure you paste the full contents of your settings.xml file in the area on the left!");
+			return;
+		}
+		writeSettings();
+		writeLine("Generated with Dark360's GTA 5 settings parser");
+	}
