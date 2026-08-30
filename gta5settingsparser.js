@@ -253,83 +253,110 @@ function writeSettings(){
 
 	    // Sampling
 	    if (resScalingType == "1") {
-	        var samplingMode = $xml.find("SamplingMode").attr("value");
-
-	        if (samplingMode !== undefined) {
-	            writeLine("Resolution Scaler: " + samplingMode);
-	        }
-
-	        writeLine("Anti-Aliasing: TAA");
-	    }
-
-		// NVIDIA DLSS / DLAA
-		if (resScalingType == "4") {
-		    var dlssQualityMap = {
-		        "0": "Performance",
-		        "1": "Balanced",
-		        "2": "Quality",
-		        "3": "DLAA"
-		    };
-		
-		    var dlssQuality = $xml.find("dlssQuality").attr("value");
-		    var dlssSharpen = $xml.find("dlssSharpen").attr("value");
-		
-		    if (dlssQuality !== undefined) {
-		        writeLine(
-		            "NVIDIA DLSS Quality: " +
-		            (dlssQualityMap[dlssQuality] || "Unknown (" + dlssQuality + ")")
-		        );
-		    }
-		
-		    if (dlssSharpen !== undefined) {
-		        writeLine(
-		            "Sharpness: " +
-		            (parseFloat(dlssSharpen) * 100).toFixed(0) +
-		            "%"
-		        );
-		    }
+			var resScalingType = $xml.find("ResScalingType").attr("value");
+			
+			var resScalingTypeMap = {
+			    "0": "Off",
+			    "1": "Sampling",
+			    "2": "AMD FSR 1",
+			    "3": "AMD FSR 3",
+			    "4": "NVIDIA DLSS"
+			};
+			
+			if (resScalingType !== undefined) {
+			    writeLine(
+			        "Frame Scaling: " +
+			        (resScalingTypeMap[resScalingType] || "Unknown (" + resScalingType + ")")
+			    );
+			}
+			
+			
+			// AMD FSR 1
+			if (resScalingType == "2") {
+			    var fsrQualityMap = {
+			        "1": "Ultra Quality",
+			        "2": "Quality",
+			        "3": "Balanced",
+			        "4": "Performance"
+			    };
+			
+			    var fsrQuality = $xml.find("fsrQuality").attr("value");
+			    var fsrSharpen = $xml.find("fsrSharpen").attr("value");
+			
+			    if (fsrQuality !== undefined) {
+			        writeLine(
+			            "AMD FSR 1 Quality: " +
+			            (fsrQualityMap[fsrQuality] || "Unknown (" + fsrQuality + ")")
+			        );
+			    }
+			
+			    if (fsrSharpen !== undefined) {
+			        writeLine(
+			            "Sharpness: " +
+			            (parseFloat(fsrSharpen) * 100).toFixed(0) +
+			            "%"
+			        );
+			    }
+			}
+			
+			
+			// AMD FSR 3
+			if (resScalingType == "3") {
+			    var fsr3QualityMap = {
+			        "0": "Performance",
+			        "1": "Balanced",
+			        "2": "Quality",
+			        "3": "Native AA"
+			    };
+			
+			    var fsr3Quality = $xml.find("fsr3Quality").attr("value");
+			    var fsr3Sharpen = $xml.find("fsr3Sharpen").attr("value");
+			
+			    if (fsr3Quality !== undefined) {
+			        writeLine(
+			            "AMD FSR 3 Quality: " +
+			            (fsr3QualityMap[fsr3Quality] || "Unknown (" + fsr3Quality + ")")
+			        );
+			    }
+			
+			    if (fsr3Sharpen !== undefined) {
+			        writeLine(
+			            "Sharpness: " +
+			            (parseFloat(fsr3Sharpen) * 100).toFixed(0) +
+			            "%"
+			        );
+			    }
+			}
+			
+			
+			// NVIDIA DLSS / DLAA
+			if (resScalingType == "4") {
+			    var dlssQualityMap = {
+			        "0": "Performance",
+			        "1": "Balanced",
+			        "2": "Quality",
+			        "3": "DLAA"
+			    };
+			
+			    var dlssQuality = $xml.find("dlssQuality").attr("value");
+			    var dlssSharpen = $xml.find("dlssSharpen").attr("value");
+			
+			    if (dlssQuality !== undefined) {
+			        writeLine(
+			            "NVIDIA DLSS Quality: " +
+			            (dlssQualityMap[dlssQuality] || "Unknown (" + dlssQuality + ")")
+			        );
+			    }
+			
+			    if (dlssSharpen !== undefined) {
+			        writeLine(
+			            "Sharpness: " +
+			            (parseFloat(dlssSharpen) * 100).toFixed(0) +
+			            "%"
+			        );
+			    }
+			}
 		}
-
-	    // AMD FSR 3
-	    if (resScalingType == "3") {
-	        var fsr3Quality = $xml.find("fsr3Quality").attr("value");
-	        var fsr3Sharpen = $xml.find("fsr3Sharpen").attr("value");
-
-	        if (fsr3Quality !== undefined) {
-	            writeLine("AMD FSR 3 Quality: " + fsr3Quality);
-	        }
-
-	        
-
-	        if (fsr3Sharpen !== undefined) {
-	            writeLine(
-	                "Sharpness: " +
-	                (parseFloat(fsr3Sharpen) * 100).toFixed(0) +
-	                "%"
-	            );
-	        }
-	    }
-
-	    // AMD FSR 1
-	    if (resScalingType == "2") {
-	        var fsrQuality = $xml.find("fsrQuality").attr("value");
-	        var fsrSharpen = $xml.find("fsrSharpen").attr("value");
-
-	        if (fsrQuality !== undefined) {
-	            writeLine("AMD FSR 1 Quality: " + fsrQuality);
-	        }
-
-	        
-
-	        if (fsrSharpen !== undefined) {
-	            writeLine(
-	                "Sharpness: " +
-	                (parseFloat(fsrSharpen) * 100).toFixed(0) +
-	                "%"
-	            );
-	        }
-	    }
-	}
 
 	// Population and distance scaling/variety
 	var population_density = $xml.find("CityDensity").attr("value");
