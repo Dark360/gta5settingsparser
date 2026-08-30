@@ -541,21 +541,39 @@ function writeSettings(){
 	        }
 	    }
 	
-	    var frameGenType = $xml.find("FrameGenType").attr("value");
-    var dlssFrameGen = $xml.find("dlssFrameGenMode").attr("value");
-    var fsr3FrameGen = $xml.find("fsr3FrameGenMode").attr("value");
-
-    var frameGeneration = "Off";
-
-    // Prefer an explicitly active mode over FrameGenType.
-    // NVIDIA mode values can be expanded once confirmed from the game.
-    if (dlssFrameGen !== undefined && dlssFrameGen != "0") {
-        frameGeneration = "NVIDIA DLSS";
-    } else if (fsr3FrameGen !== undefined && fsr3FrameGen != "0") {
-        frameGeneration = "AMD FSR 3";
-    }
-
-    writeLine("Frame Generation: " + frameGeneration);
+	var frameGenType = $xml.find("FrameGenType").attr("value");
+	
+	if (frameGenType !== undefined) {
+	    switch (frameGenType) {
+	        case "0":
+	            writeLine("Frame Generator: Off");
+	            break;
+	
+	        case "1":
+	            writeLine("Frame Generator: NVIDIA DLSS");
+	
+	            var dlssFrameGenMode =
+	                $xml.find("dlssFrameGenMode").attr("value");
+	
+	            if (dlssFrameGenMode !== undefined) {
+	                var dlssFrameGenModeMap = {
+	                    "0": "2X"
+	                };
+	
+	                writeLine(
+	                    "NVIDIA DLSS Frame Generation Mode: " +
+	                    (dlssFrameGenModeMap[dlssFrameGenMode] ||
+	                        "Unknown (" + dlssFrameGenMode + ")")
+	                );
+	            }
+	            break;
+	
+	        default:
+	            writeLine(
+	                "Frame Generator: Unknown (" + frameGenType + ")"
+	            );
+	    }
+	}
 
 	}
 	// Enhanced-only Ray Tracing settings
