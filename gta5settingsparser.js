@@ -313,12 +313,15 @@ function writeSettings(){
 		writeLine("Reflection quality: " + REFLECTION_QUALITY_SETTINGS[reflection_quality]);
 	} else {writeLine("UNKNOWN REFLECTION QUALITY");}
 
-	// Reflection MSAA
-	var reflection_msaa = $xml.find("ReflectionMSAA").attr("value");
-	if(reflection_msaa == 0){
-		writeLine("Reflection MSAA: Off");
-	} else {
-		writeLine("Reflection MSAA: " + reflection_msaa + "x");
+	// Reflection MSAA - Legacy only
+	if (!enhanced) {
+	    var reflection_msaa = $xml.find("ReflectionMSAA").attr("value");
+	
+	    if (reflection_msaa == 0) {
+	        writeLine("Reflection MSAA: Off");
+	    } else {
+	        writeLine("Reflection MSAA: " + reflection_msaa + "x");
+	    }
 	}
 
 	// Water quality
