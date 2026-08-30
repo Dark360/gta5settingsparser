@@ -262,41 +262,33 @@ function writeSettings(){
 	        writeLine("Anti-Aliasing: TAA");
 	    }
 
-	    // NVIDIA DLSS / DLAA
-	    if (resScalingType == "4") {
-			var dlssQualityMap = {
-			    "0": "Performance",
-			    "1": "Balanced",
-			    "2": "Quality",
-			    "3": "DLAA"
-			};
-			
-			var dlssQuality = $xml.find("dlssQuality").attr("value");
-	        var dlssSharpen = $xml.find("dlssSharpen").attr("value");
-
-	        // Confirmed from the supplied Enhanced menu recording:
-	        // dlssQuality 3 is displayed as DLAA.
-	        var dlssQualityName = {
-	            "3": "DLAA"
-	        };
-
-	        if (dlssQuality !== undefined) {
-	            writeLine(
-	                "NVIDIA DLSS Quality: " +
-	                (dlssQualityName[dlssQuality] || "Unknown (" + dlssQuality + ")")
-	            );
-	        }
-
-	        
-
-	        if (dlssSharpen !== undefined) {
-	            writeLine(
-	                "Sharpness: " +
-	                (parseFloat(dlssSharpen) * 100).toFixed(0) +
-	                "%"
-	            );
-	        }
-	    }
+		// NVIDIA DLSS / DLAA
+		if (resScalingType == "4") {
+		    var dlssQualityMap = {
+		        "0": "Performance",
+		        "1": "Balanced",
+		        "2": "Quality",
+		        "3": "DLAA"
+		    };
+		
+		    var dlssQuality = $xml.find("dlssQuality").attr("value");
+		    var dlssSharpen = $xml.find("dlssSharpen").attr("value");
+		
+		    if (dlssQuality !== undefined) {
+		        writeLine(
+		            "NVIDIA DLSS Quality: " +
+		            (dlssQualityMap[dlssQuality] || "Unknown (" + dlssQuality + ")")
+		        );
+		    }
+		
+		    if (dlssSharpen !== undefined) {
+		        writeLine(
+		            "Sharpness: " +
+		            (parseFloat(dlssSharpen) * 100).toFixed(0) +
+		            "%"
+		        );
+		    }
+		}
 
 	    // AMD FSR 3
 	    if (resScalingType == "3") {
